@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer } from 'http';
-import { expressMiddleware } from "./trpc/trpc.js";
+import { expressMiddleware } from "./trpc/appRouter.js";
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
