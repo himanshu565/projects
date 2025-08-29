@@ -1,61 +1,84 @@
-import express from 'express';
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../models/userModel');
-const authMiddleware = require('../middleware/authMiddleware');
+import { z } from "zod";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { TRPCError } from "@trpc/server";
+import User from "../models/userModel.js"; // mongoose model
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc"; // adjust paths
 
-const router = express.Router();
+export const authRouter = createTRPCRouter({
+  // REGISTER
+  register: publicProcedure
+    .input(
+      z.object({
+        name: z.string().min(2),
+        email: z.string().email(),
+        password: z.string().min(6),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { name, email, password } = input;
 
-// REGISTER
-router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User already exists",
+        });
+      }
 
-    try {
-        let user = await User.findOne({ email });
-        if (user) return res.status(400).json({ message: 'User already exists' });
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User({ name, email, password: hashedPassword });
+      await user.save();
 
-        user = new User({ name, email, password: hashedPassword });
-        await user.save();
+      return { message: "User registered successfully" };
+    }),
 
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  // LOGIN
+  login: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string().min(6),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { email, password } = input;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid credentials",
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid credentials",
+        });
+      }
+
+      const token = jwt.sign(
+        { id: user._id },
+        process.env.JWT_SECRET as string,
+        { expiresIn: "1h" }
+      );
+
+      return { token };
+    }),
+
+  // ME (Protected)
+  me: protectedProcedure.query(async ({ ctx }) => {
+    const user = await User.findById(ctx.user.id).select("-password");
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
     }
+    return user;
+  }),
 });
-
-// LOGIN
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-
-    try {
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-        const token = jwt.sign(
-            { id: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        res.json({ token });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// PROTECTED ROUTE
-router.get('/me', authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id).select('-password');
-        res.json(user);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-module.exports = router;
