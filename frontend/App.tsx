@@ -1,34 +1,24 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import { trpc } from './trpc/trpc.ts';
 
-function App() {
-  const [dir, setDir] = useState<string[]>([]);
-  console.log(Array.isArray(dir));
-  useEffect(() => {
-    const getDir = async () => {
-      const out = await trpc.lsroot.query();
-      if (Array.isArray(out)) {
-        setDir(out);
-      } else {
-        console.error('Not an array:', out);
-      }
-    };
-    getDir();
-  }, [])
-  
+import './App.css';
+import { FilePage } from './pages/FilePage.js';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HomePage } from './pages/HomePage.js';
+import { DashboardPage } from './pages/DashboardPage.js';
+import { TeamPage } from './pages/TeamPage.js';
+
+
+
+const App: React.FC = () => {
   return (
-    <>
-      <div>
-        <h1>Root Directory Contents</h1>
-        <ul>
-          {dir.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-      </div>
-    </>
-  )
-}
+    <Router>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/team/:teamid/doc/:docid" element={<FilePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/team/:teamid" element={<TeamPage />} />
+      </Routes>
+    </Router>
+  );
+};
 
-export default App
+export default App;

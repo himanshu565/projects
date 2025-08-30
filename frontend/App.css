@@ -1,8 +1,6 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+#root{
+    display: flex;
+    justify-content: space-evenly;
 }
 
 .logo {
@@ -37,6 +35,15 @@
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
+textarea{
+    height: 85vh;
+    width: 70vw;
+    border-radius: 5px;
+    padding: 20px;
+    resize: none;
+}
+
+textarea:focus{
+    outline: none;
+    border-color: #707070;
 }
