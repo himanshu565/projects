@@ -1,4 +1,6 @@
 import express from 'express';
+import 'dotenv/config';
+import cookieParser from 'cookie-parser'; 
 import { createServer } from 'http';
 import { expressMiddleware } from "./trpc/appRouter.js";
 import cors from 'cors';
@@ -6,25 +8,15 @@ import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { Server } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from './types/event-type.js';
-import { serverEventListeners } from './socket/serv-event-listeners.js';
-import { specialEventListeners } from './socket/special-event-listners.js';
+import { specialEventHandlers } from './socket/special-event-handlers.js';
+import { clientEventHandlers } from './socket/client-event-handlers.js';
+import { loginHandler, OAuthCallback } from './auth/app-auth.js';
 
-const PORT = process.env.PORT || 3000;
+export const PORT = process.env.PORT || 3000;
 
 const app = express();
-export const httpServer = createServer(app);
-export const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
-    cors: {
-        origin: "http://localhost:5173"
-    }
-});
 
-// Socket listners declaration
-io.on("connection", (socket) => {
-    serverEventListeners(socket);
-    specialEventListeners(socket);
-    logger.info(`Connection established for host ${socket.client.request.headers.origin}`)
-});
+app.use(cookieParser());
 
 export const logger = pino();
 const httpLogger = pinoHttp({
@@ -42,6 +34,22 @@ app.use(
     '/trpc',
     expressMiddleware,
 );
+
+app.get('/auth/login', loginHandler);
+app.get('/auth/callback', OAuthCallback);
+
+export const httpServer = createServer(app);
+export const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+    cors: {
+        origin: "http://localhost:5173"
+    }
+});
+
+io.on("connection", (socket) => {
+    clientEventHandlers(socket);
+    specialEventHandlers(socket);
+    logger.info(`Connection established for host ${socket.client.request.headers.origin}`)
+});
 
 httpServer.listen(PORT, () => {
     logger.info(`Running node server on ${PORT}`);
