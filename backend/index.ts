@@ -35,6 +35,8 @@ app.use(
     expressMiddleware,
 );
 
+// TODO: Need to add auth middleware for jwt based authenticaiton 
+
 app.get('/auth/login', loginHandler);
 app.get('/auth/callback', OAuthCallback);
 

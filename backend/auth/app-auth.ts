@@ -32,14 +32,15 @@ export async function loginHandler(req: Request, res: Response){
   const params = new URLSearchParams({
     client_id: OAUTH_CLIENT_ID!,
     response_type: "code",
-    redirect_uri: `${BASE_URL}/auth/callback`,
+    redirect_uri: `http://localhost:5173/callback`,
     scope: OAUTH_SCOPE,
     state,
     code_challenge: codeChallenge,
     code_challenge_method: "S256"
   });
 
-  res.redirect(`${OAUTH_AUTHORIZATION_URL}?${params}`);
+  res.status(200).json({"authUrl":`${OAUTH_AUTHORIZATION_URL}?${params}`});
+
 }
 
 export async function OAuthCallback(req: Request, res: Response){
@@ -63,7 +64,7 @@ export async function OAuthCallback(req: Request, res: Response){
   const body = new URLSearchParams({
     grant_type: 'authorization_code',
     code: String(code),
-    redirect_uri: `${BASE_URL}/auth/callback`,
+    redirect_uri: `http://localhost:5173/callback`,
     client_id: OAUTH_CLIENT_ID!,
     code_verifier: codeVerifier,
   });
@@ -102,7 +103,7 @@ export async function OAuthCallback(req: Request, res: Response){
     res.json({ jwt: appJwt });
 
   } catch{
-      return res.status(500).json({ error: "Error Generating Jwt Token"});
+    return res.status(500).json({ error: "Error Generating Jwt Token"});
   }
 
 }
