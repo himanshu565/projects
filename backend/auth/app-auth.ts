@@ -3,11 +3,10 @@ import fetch from 'node-fetch';
 import type { Request, Response } from 'express';
 import { generateRandomBase64Url, sha256Base64Url } from '../util/crypt.js';
 import type { OAuthTokenResponse } from '../types/data-types.js';
-import { PORT } from '../index.js';
 import { generateJwt } from '../util/jwt-utils.js';
 
 const {
-  BASE_URL = `http://localhost:${PORT}`,
+  BASE_URL = `http://localhost:3000`,
   OAUTH_AUTHORIZATION_URL,
   OAUTH_TOKEN_URL,
   OAUTH_USERINFO_URL,

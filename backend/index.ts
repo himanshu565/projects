@@ -12,7 +12,7 @@ import { specialEventHandlers } from './socket/special-event-handlers.js';
 import { clientEventHandlers } from './socket/client-event-handlers.js';
 import { loginHandler, OAuthCallback } from './auth/app-auth.js';
 
-export const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 
