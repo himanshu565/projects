@@ -1,6 +1,5 @@
 import { initTRPC } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { docRouter } from './docRouter.js';
 
 export const createContext = ({ req, res }: trpcExpress.CreateExpressContextOptions) => ({})
 
