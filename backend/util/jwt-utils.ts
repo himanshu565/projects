@@ -1,40 +1,39 @@
-import type { AuthenticatedRequest, OAuthTokenResponse } from "../types/data-types.js";
-import type { Response, NextFunction } from 'express';
+import type { JwtState, OAuthTokenResponse } from "../types/data-types.js";
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 
 const {
-  JWT_SECRET = "",
+  JWT_SECRET
 } = process.env;
 
-export function requireAuth(req: AuthenticatedRequest, res: Response, next: NextFunction): void {
-  const authHeader = req.headers.get('authorization');
-  if (!authHeader) {
-    res.status(401).json({ error: 'Missing token' });
-    return;
-  }
-  
-  const token = authHeader.split(' ')[1];
-
+export function verifyJwt(token: string) : JwtState {
   try {
-    if(!token){
-        throw new Error("Token Not Found");
+    if(!JWT_SECRET){
+        throw Error("Secret not defined");
     }
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return { 
+        valid: true, 
+        expired: false, 
+        decoded 
+    };
   }
-  catch {
-    res.status(401).json({ error: 'Missing or Invalid token' });
+  catch (error: any) {
+      return { 
+          valid: false, 
+          expired: error.name === "TokenExpiredError",
+          decoded: "",
+      }
   }
 }
 
-export function generateJwt(claims: Record<string, unknown>, tokenSet: OAuthTokenResponse){
+export function generateJwt(claims: Record<string, unknown>, tokenSet: OAuthTokenResponse) : string {
     if(!JWT_SECRET){
         throw new Error('Missing JWT Secret');
     }
     return jwt.sign(
     { sub: claims?.sub, claims, providerTokens: tokenSet },
     JWT_SECRET,
-    { expiresIn: '1h' }
+    { expiresIn: '24h' }
   )
 }

@@ -10,9 +10,13 @@ import { Server } from 'socket.io';
 import type { ClientToServerEvents, ServerToClientEvents } from './types/event-type.js';
 import { specialEventHandlers } from './socket/special-event-handlers.js';
 import { clientEventHandlers } from './socket/client-event-handlers.js';
-import { loginHandler, OAuthCallback } from './auth/app-auth.js';
+import { loginHandler, OAuthCallback } from './auth/oauth-handlers.js';
+import { jwtMiddleware } from './auth/middleware.js';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
-const PORT = process.env.PORT || 3000;
+const { PORT, DATABASE_URL } = process.env;
+
+export const db = drizzle(DATABASE_URL!);
 
 const app = express();
 
@@ -31,11 +35,14 @@ app.use(cors({
 }));
 
 app.use(
+    '/trpc', 
+    jwtMiddleware,
+);
+
+app.use(
     '/trpc',
     expressMiddleware,
 );
-
-// TODO: Need to add auth middleware for jwt based authenticaiton 
 
 app.get('/auth/login', loginHandler);
 app.get('/auth/callback', OAuthCallback);
