@@ -2,10 +2,10 @@ import 'dotenv/config';
 import fetch from 'node-fetch';
 import type { Request, Response } from 'express';
 import { generateRandomBase64Url, sha256Base64Url } from '../util/crypt.js';
-import type { OAuthTokenResponse } from '../types/data-types.js';
+import type { OAuthTokenResponse } from '../types/dataTypes.js';
 import { generateJwt } from '../util/jwt-utils.js';
 import { db } from '../index.js';
-import { usersTable } from '../db/schemas/users.js';
+import { usersTable, type User } from '../db/schemas/users.js';
 import { eq } from 'drizzle-orm';
 
 const {
@@ -84,12 +84,11 @@ export async function OAuthCallback(req: Request, res: Response): Promise<void> 
     }
     
     // TODO: need to create db service layer for other services
-    const fetchUser = await db.select().from(usersTable).where(eq(usersTable.email, claims.email as string));
-
+    const fetchUser = await db.select().from(usersTable).where(eq(usersTable.email, claims.email));
     if(fetchUser.length === 0){
-        const newUser: typeof usersTable.$inferInsert = { 
-            first_name: claims.given_name as string, 
-            last_name: claims.family_name as string,
+        const newUser: User = { 
+            firstName: claims.given_name as string, 
+            lastName: claims.family_name as string,
             email: claims.email as string, 
         };
 

@@ -11,12 +11,11 @@ import type { ClientToServerEvents, ServerToClientEvents } from './types/event-t
 import { specialEventHandlers } from './socket/special-event-handlers.js';
 import { clientEventHandlers } from './socket/client-event-handlers.js';
 import { loginHandler, OAuthCallback } from './auth/oauth-handlers.js';
-import { jwtMiddleware } from './auth/middleware.js';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 
 const { PORT, DATABASE_URL } = process.env;
 
-export const db = drizzle(DATABASE_URL!);
+export const db: NodePgDatabase = drizzle({ connection: DATABASE_URL, casing: 'snake_case'});
 
 const app = express();
 
@@ -33,11 +32,6 @@ app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
 }));
-
-app.use(
-    '/trpc', 
-    jwtMiddleware,
-);
 
 app.use(
     '/trpc',
