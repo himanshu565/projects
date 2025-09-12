@@ -8,8 +8,10 @@ interface OAuthTokenResponse {
   token_type: string;
 }
 
-interface AuthenticatedRequest extends Request {
-  user?: JwtPayload | string;
+interface JwtState {
+    valid: boolean;
+    expired: boolean;
+    decoded: JwtPayload | string; 
 }
 
 export class FileChunk{
@@ -32,4 +34,4 @@ export class FileChunk{
 }
 
 export type { OAuthTokenResponse };
-export type { AuthenticatedRequest };
+export type { JwtState };

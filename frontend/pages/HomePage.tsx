@@ -1,13 +1,11 @@
-import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const HomePage: React.FC = () => {
-    
-    useEffect(() => {
 
-    }, []);
+    const navigate = useNavigate();
 
-    const handler = () => {
-
+    const signIn = () => {
+        navigate('/signin');
     };
 
     return (
@@ -21,8 +19,7 @@ export const HomePage: React.FC = () => {
                         <li><a href="#pricing">Pricing</a></li>
                         <li><a href="#contact">Contact</a></li>
                     </ul>
-                    <button onClick={handler}>Sign-in</button>
-                    <button onClick={handler}>Sign-up</button>
+                    <button onClick={signIn}>Sign In</button>
                 </nav>
             </header>
 
@@ -31,13 +28,14 @@ export const HomePage: React.FC = () => {
                     <div className="container">
                         <h1>Manage Your Text Files Like Never Before</h1>
                         <p>Say goodbye to scattered documents and hello to organized, searchable, and collaborative text file management. TBD makes it simple.</p>
-                        <button className="cta-button" onClick={handler}>Sign up</button>
                     </div>
                 </section>
 
                 <section className="features" id="features">
                     <div className="container">
-                        <h2>Why Choose TBD?</h2>
+
+
+                    <h2>Why Choose TBD?</h2>
                         <div className="features-grid">
                             <div className="feature-card">
                                 <h3>Smart Organization</h3>
