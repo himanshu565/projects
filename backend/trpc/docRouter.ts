@@ -3,11 +3,15 @@ import { z } from 'zod';
 
 export const docRouter = router({
     getTeamDocs: 
-        publicProcedure.input(z.string())
+        publicProcedure
         .query((opts) => {
             //TODO: Should fetch the list of docs managed by a team, from the DB (team operation)
-            const { input } = opts;
-            return ['team'];
+            const { ctx } = opts;
+            return [
+                {
+                    docName: "doc1", // other details...
+                }
+            ];
         }),
     getDocMetadata:
         publicProcedure.input(
@@ -19,19 +23,6 @@ export const docRouter = router({
         .query((opts) => {
             //TODO: Should fetch doc details: size, name, type etc. (owner operation)
             return {
-            };
-        }),
-
-    getDocData:
-        publicProcedure.input(
-            z.object({
-                docName: z.string()
-            })
-        )
-        .query((opts) => {
-            //TODO: Should return the data in the queried doc for authorized users.
-            return {
-
             };
         }),
 });

@@ -1,13 +1,26 @@
+import { eq } from "drizzle-orm";
+import { userTeamJunctionTable } from "../db/schemas/teamUserJunction.js";
 import { publicProcedure, router } from "./trpc.js";
 import { z } from 'zod';
+import { teamsTable } from "../db/schemas/teams.js";
 
 export const teamRouter = router({
     getTeams: 
-        publicProcedure.input(z.string())
+        publicProcedure
         .query((opts) => {
-            //TODO: Should fetch the list of teams that user is a part of, from the DB
-            const { input } = opts;
-            return ['teamx'];
+            const { ctx } = opts;
+            
+            const teams = ctx.db.select({ 
+                teamId: teamsTable.id,
+                name: teamsTable.teamName,
+                desc: teamsTable.teamDesc,
+                owner: teamsTable.ownerId,
+            })
+            .from(userTeamJunctionTable)
+            .innerJoin(teamsTable, eq(userTeamJunctionTable.teamId, teamsTable.id))
+            .where(eq(teamsTable.id, ctx.user));
+
+            return teams;
         }),
     getTeam: 
         publicProcedure.input(
