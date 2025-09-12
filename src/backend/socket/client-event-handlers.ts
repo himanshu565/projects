@@ -1,8 +1,8 @@
 import type { Socket } from "socket.io";
-import type { ClientToServerEvents, ServerToClientEvents } from "../types/eventType.js";
+import type { ClientToServerEvents, ServerToClientEvents } from "../../types/eventType.js";
 import { logger } from "../index.js";
 import { open, stat } from "node:fs/promises";
-import { FileChunk } from "../types/dataTypes.js";
+import { FileChunk } from "../../types/dataTypes.js";
 
 // documents directory
 const docDir: string = process.env.PROJ_DIR || "/var/proj/doc/";

@@ -2,7 +2,7 @@ import 'dotenv/config';
 import fetch from 'node-fetch';
 import type { Request, Response } from 'express';
 import { generateRandomBase64Url, sha256Base64Url } from '../util/crypt.js';
-import type { OAuthTokenResponse } from '../types/dataTypes.js';
+import type { OAuthTokenResponse } from '../../types/dataTypes.js';
 import { generateJwt } from '../util/jwt-utils.js';
 import { db } from '../index.js';
 import { usersTable, type User } from '../db/schemas/users.js';

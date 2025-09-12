@@ -1,5 +1,5 @@
 import { Socket } from "socket.io-client";
-import type { ClientToServerEvents, ServerToClientEvents } from "../../backend/types/eventType.js";
+import type { ClientToServerEvents, ServerToClientEvents } from "../../types/eventType.js";
 
 export const setupEventHandlers = (socket: Socket<ServerToClientEvents, ClientToServerEvents>) => {
     socket.on("userWriting", userWritingHandler);

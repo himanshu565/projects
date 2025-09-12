@@ -1,5 +1,5 @@
 import type { CreateExpressContextOptions } from '@trpc/server/adapters/express';
-import type { CreateInnerContextOptions } from '../types/trpcTypes.js';
+import type { CreateInnerContextOptions } from '../../types/trpcTypes.js';
 import { db } from '../index.js';
 
 export async function createContextInner(opts?: CreateInnerContextOptions){

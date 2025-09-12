@@ -2,8 +2,8 @@ import { useEffect, useRef} from 'react';
 import type { RefObject } from 'react';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
-import type { ServerToClientEvents, ClientToServerEvents } from '../../backend/types/eventType.js';
-import type { FileChunk } from '../../backend/types/dataTypes.js';
+import type { ServerToClientEvents, ClientToServerEvents } from '../../types/eventType.js';
+import type { FileChunk } from '../../types/dataTypes.js';
 import { setupEventHandlers } from '../socket/server-event-handlers.js';
 
 export function FilePage() {

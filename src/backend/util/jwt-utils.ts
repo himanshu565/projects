@@ -1,4 +1,4 @@
-import type { JwtState, OAuthTokenResponse } from "../types/data-types.js";
+import type { JwtState, OAuthTokenResponse } from "../../types/dataTypes.js";
 import jwt from 'jsonwebtoken';
 import 'dotenv/config';
 

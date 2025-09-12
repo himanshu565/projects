@@ -1,5 +1,5 @@
 import type { Socket } from "socket.io";
-import type { ClientToServerEvents, ServerToClientEvents } from "../types/eventType.js";
+import type { ClientToServerEvents, ServerToClientEvents } from "../../types/eventType.js";
 import { logger } from "../index.js";
 
 export const specialEventHandlers = (socket: Socket<ClientToServerEvents, ServerToClientEvents>) => {

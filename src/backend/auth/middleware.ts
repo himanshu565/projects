@@ -1,4 +1,4 @@
-import type { JwtState } from "../types/dataTypes.js";
+import type { JwtState } from "../../types/dataTypes.js";
 import { verifyJwt } from "../util/jwt-utils.js";
 import { db } from "../index.js";
 import { usersTable } from "../db/schemas/users.js";

@@ -1,4 +1,4 @@
-import type { ErrorProp } from "../types/ErrorProp.js";
+import type { ErrorProp } from "../../types/ErrorProp.js";
 
 export function ErrorPage(props: ErrorProp) {
 

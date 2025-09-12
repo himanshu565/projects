@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "type": "module",
   "scripts": {
-    "back-dev": "nodemon --ext ts,js --exec \"node --import=tsx backend/index.ts\"",
+    "back-dev": "nodemon --ext ts,js --exec \"node --import=tsx src/backend/index.ts\"",
     "front-dev": "vite"
   },
   "keywords": [],
