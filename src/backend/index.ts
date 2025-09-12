@@ -7,7 +7,7 @@ import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { Server } from 'socket.io';
-import type { ClientToServerEvents, ServerToClientEvents } from './types/event-type.js';
+import type { ClientToServerEvents, ServerToClientEvents } from '../types/eventType.js';
 import { specialEventHandlers } from './socket/special-event-handlers.js';
 import { clientEventHandlers } from './socket/client-event-handlers.js';
 import { loginHandler, OAuthCallback } from './auth/oauth-handlers.js';
