@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { DashboardPage } from "../pages/DashboardPage.js";
+import  DashboardPage  from "../pages/DashboardPage.js";
 import { ErrorPage } from "../pages/ErrorPage.js";
 import { useEffect, useState } from "react";
 
