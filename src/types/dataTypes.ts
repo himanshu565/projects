@@ -14,6 +14,28 @@ interface JwtState {
     decoded: JwtPayload | string; 
 }
 
+interface TeamCardDetails {
+    teamId: number | undefined,
+    name: string | undefined,
+    desc: string | undefined,
+    ownerId: number | undefined,
+    ownerFirstName: string | null,
+    ownerLastName: string | null,
+}
+
+interface TeamPageDetails extends TeamCardDetails {
+    collaborators: {
+        userId: number,
+        firstName: string,
+        lastName: string,
+    }[],
+
+    docs: {
+        docId: number,
+        name: string,
+    }[],
+}
+
 export class FileChunk{
     static readonly MAX_CHUNK_SIZE: number = 4096;
     static readonly DEFUALT_INIT_CHUNK_SIZE: number = 1024;
@@ -34,4 +56,6 @@ export class FileChunk{
 }
 
 export type { OAuthTokenResponse };
+export type { TeamCardDetails };
+export type { TeamPageDetails };
 export type { JwtState };
