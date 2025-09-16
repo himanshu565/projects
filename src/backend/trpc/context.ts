@@ -1,8 +1,8 @@
 import type { CreateExpressContextOptions } from '@trpc/server/adapters/express';
-import type { CreateInnerContextOptions } from '../../types/trpcTypes.js';
+import type { CreateInnerContextOptions, InnerContext } from '../../types/trpcTypes.js';
 import { db } from '../index.js';
 
-export async function createContextInner(opts?: CreateInnerContextOptions){
+export async function createContextInner(opts?: CreateInnerContextOptions): Promise<InnerContext> {
     return {
         db,
         user: opts?.user,
@@ -11,7 +11,7 @@ export async function createContextInner(opts?: CreateInnerContextOptions){
 
 export async function createContext(opts: CreateExpressContextOptions){
 
-    const contextInner = await createContextInner();
+    const contextInner: InnerContext = await createContextInner();
 
     return {
         ...contextInner,

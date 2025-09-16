@@ -15,23 +15,23 @@ interface JwtState {
 }
 
 interface TeamCardDetails {
-    teamId: number | undefined,
+    teamId: string | undefined,
     name: string | undefined,
     desc: string | undefined,
-    ownerId: number | undefined,
-    ownerFirstName: string | null,
-    ownerLastName: string | null,
+    ownerId: string | undefined,
+    ownerFirstName: string | undefined,
+    ownerLastName: string | undefined,
 }
 
 interface TeamPageDetails extends TeamCardDetails {
     collaborators: {
-        userId: number,
+        userId: string,
         firstName: string,
         lastName: string,
     }[],
 
     docs: {
-        docId: number,
+        docId: string,
         name: string,
     }[],
 }

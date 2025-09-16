@@ -42,7 +42,7 @@ export const jwtMiddleware = async (opts: any) => {
 
     return opts.next({
         ctx: {
-            user: userDetails[0]?.id, 
+            user: userDetails[0], 
         },
     });
 };

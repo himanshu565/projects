@@ -1,4 +1,9 @@
 import crypto from 'crypto';
+import { nanoid } from 'nanoid';
+
+export function generateUniquePublicId(size = 10): string {
+    return nanoid(size);
+}
 
 export function generateRandomBase64Url(bytes = 32): string {
   return crypto.randomBytes(bytes)

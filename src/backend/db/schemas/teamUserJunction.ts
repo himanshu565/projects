@@ -17,3 +17,5 @@ export const userTeamJunctionTable = pgTable(
         primaryKey({ columns: [table.teamId, table.userId] }),
     ]
 );
+
+export type UserTeamMapping = typeof userTeamJunctionTable.$inferInsert;

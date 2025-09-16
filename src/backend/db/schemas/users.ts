@@ -5,11 +5,13 @@ export const usersTable = pgTable(
     "users", 
     {
         id: integer().primaryKey().generatedAlwaysAsIdentity(),
+        publicId: varchar("public_id",{ length: 10 }).unique().notNull(),
         firstName: varchar("first_name", { length: 255 }).notNull(),
         lastName: varchar("last_name", { length: 255 }).notNull(),
         email: varchar({ length: 255 }).notNull().unique(),
     },
     (table) => [
+        uniqueIndex("public_id").on(table.publicId),
         uniqueIndex("email_idx").on(table.email),
     ]
 );
