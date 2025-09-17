@@ -12,6 +12,7 @@ export const userTeamJunctionTable = pgTable(
         removeUserPerm: boolean("remove_user_perm").notNull(),
         addDocPerm: boolean("add_doc_perm").notNull(),
         removeDocPerm: boolean("remove_doc_perm").notNull(),
+        deleteTeamPerm: boolean("delete_team_perm").notNull().default(true),
     },
     (table) => [
         primaryKey({ columns: [table.teamId, table.userId] }),
