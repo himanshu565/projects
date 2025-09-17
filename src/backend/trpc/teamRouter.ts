@@ -9,7 +9,7 @@ import { usersTable } from "../db/schemas/users.js";
 import type { TeamCardDetails, TeamPageDetails } from "../../types/dataTypes.js";
 import { docsTable } from "../db/schemas/docs.js";
 import { teamDocJunctionTable } from "../db/schemas/teamDocJunction.js";
-import { TRPCError, type inferProcedureBuilderResolverOptions } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { generateUniquePublicId } from "../util/crypt.js";
 
 export const teamRouter = router({
@@ -33,6 +33,7 @@ export const teamRouter = router({
 
             return out;
         }),
+
     getTeam: 
         publicProcedure.input(z.object({ teamid: z.string() }))
         .query(async (opts): Promise<TeamPageDetails> => {
@@ -99,4 +100,79 @@ export const teamRouter = router({
             
             return out;
         }),
+
+    createTeam:
+        publicProcedure.input(z.object({
+            name: z.string(),
+            desc: z.string(),
+        }))
+        .mutation(async (opts): Promise<void> => {
+            const { input, ctx } = opts;
+
+            const newTeamPublicId = generateUniquePublicId();
+            const newTeam: Team = {
+                publicId: newTeamPublicId,
+                teamName: input.name,
+                teamDesc: input.desc,
+                ownerId: ctx.user.id,
+            };
+
+            await ctx.db.insert(teamsTable).values(newTeam);
+
+            const newTeamId = await ctx.db.select({
+                id: teamsTable.id,
+            })
+            .from(teamsTable)
+            .where(eq(teamsTable.publicId, newTeamPublicId));
+
+            if(newTeamId[0] === undefined){
+                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
+            }
+
+            const newUserTeamMapping: UserTeamMapping = {
+                userId: ctx.user.id,
+                teamId: newTeamId[0].id,
+                addUserPerm: true,
+                addDocPerm: true,
+                removeDocPerm: true,
+                removeUserPerm: true,
+                deleteTeamPerm: true,
+            }
+
+            await ctx.db.insert(userTeamJunctionTable).values(newUserTeamMapping);
+        }),
+
+    deleteTeam:
+        publicProcedure.input(z.object({
+            publicId: z.string()
+        }))
+        .mutation(async (opts): Promise<void> => {
+            const { input, ctx } = opts;
+            
+            const teamId = await ctx.db.select({
+                id: teamsTable.id
+            })
+            .from(teamsTable)
+            .where(eq(teamsTable.publicId, input.publicId));
+
+            if(teamId[0] === undefined){
+                throw new TRPCError({ code: "NOT_FOUND" });
+            }
+            
+            const userDeletePerms = await ctx.db.select({
+                deleteTeamPerm: userTeamJunctionTable.deleteTeamPerm,  
+            })
+            .from(userTeamJunctionTable)
+            .where(and(
+                eq(userTeamJunctionTable.userId, ctx.user.id),
+                eq(userTeamJunctionTable.teamId, teamId[0].id),
+            ));
+
+            if(userDeletePerms[0] === undefined || !(userDeletePerms[0].deleteTeamPerm)){
+                throw new TRPCError({ code: "FORBIDDEN" });
+            }
+
+            await ctx.db.delete(teamsTable).where(eq(teamsTable.publicId, input.publicId));
+        }),
+
 });
