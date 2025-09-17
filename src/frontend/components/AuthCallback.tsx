@@ -1,14 +1,13 @@
-import { useLocation } from "react-router-dom";
-import  DashboardPage  from "../pages/DashboardPage.js";
-import { ErrorPage } from "../pages/ErrorPage.js";
-import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export function AuthCallback(){
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const state = queryParams.get('state');
     const code = queryParams.get('code');
-    const [callbackResp, setCallbackResp] = useState<Response | null>(null);
+    const callbackResp = null;
+    const navigate = useNavigate();
 
     useEffect( () => {
         const fetchJwt = async () => {
@@ -16,7 +15,14 @@ export function AuthCallback(){
                 method: "GET",
                 credentials: "include",
             });
-            setCallbackResp(callbackResp);
+            if(callbackResp.ok){
+                const jsonResp = await callbackResp.json();
+                localStorage.setItem("UserJwt", jsonResp.jwt);
+                navigate("/dashboard");
+            }
+            else{
+                navigate("/error");
+            }
         }
         fetchJwt();
     },[]);
@@ -26,11 +32,5 @@ export function AuthCallback(){
         return <div>Loading...</div>;
     }
 
-    if(!callbackResp.ok){
-        //TODO: Should Navigate to Error Page
-        return <ErrorPage errorCode={callbackResp.status} errorDesc={callbackResp.statusText}/>
-    }
-
-    //TODO: Should Navigate to Dashboard or requested page (TBD)
-    return <DashboardPage />
+    return null;
 }

@@ -5,6 +5,12 @@ export const trpc = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `http://localhost:3000/trpc`,
+      headers() {
+          const userJwt: string | null = localStorage.getItem("UserJwt") 
+          return {
+              Authorization: userJwt ? "Bearer " + userJwt : "",
+          };
+      }
     }),
   ],
 });
