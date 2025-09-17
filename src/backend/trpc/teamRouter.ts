@@ -18,8 +18,6 @@ export const teamRouter = router({
         .query(async (opts): Promise<TeamCardDetails[]> => {
             const { ctx } = opts;
 
-            console.log(ctx.user.id);
-
             const out: TeamCardDetails[] = await ctx.db.select({ 
                 teamId: teamsTable.publicId,
                 name: teamsTable.teamName,
@@ -40,8 +38,6 @@ export const teamRouter = router({
         .query(async (opts): Promise<TeamPageDetails> => {
             const { ctx, input } = opts;
 
-            console.log(ctx.user.id);
-
             const teamDetails = await ctx.db.select({ 
                 teamId: teamsTable.publicId,
                 name: teamsTable.teamName,
@@ -55,8 +51,6 @@ export const teamRouter = router({
                 eq(userTeamJunctionTable.userId, ctx.user.id),
                 eq(teamsTable.publicId, input.teamid),
             ));
-
-            console.log(teamDetails);
 
             if(teamDetails.length === 0){
                 throw new TRPCError({ code: "FORBIDDEN" });

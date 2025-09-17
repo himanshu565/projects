@@ -98,7 +98,6 @@ export async function OAuthCallback(req: Request, res: Response): Promise<void> 
 
     try {
         const appJwt: string = generateJwt(claims, tokenSet);
-        console.log(appJwt);
         res.clearCookie('pkce');
         res.json({ jwt: appJwt });
 
