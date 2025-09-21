@@ -54,7 +54,10 @@ export const teamRouter = router({
             ));
 
             if(teamDetails.length === 0){
-                throw new TRPCError({ code: "FORBIDDEN" });
+                throw new TRPCError({ 
+                    code: "FORBIDDEN",
+                    message: "You do not have access to this team or it does not exist."
+                });
             }
 
             // fetch collaborators
@@ -126,7 +129,10 @@ export const teamRouter = router({
             .where(eq(teamsTable.publicId, newTeamPublicId));
 
             if(newTeamId[0] === undefined){
-                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
+                throw new TRPCError({ 
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Failed to create team. Please try again."
+                });
             }
 
             const newUserTeamMapping: UserTeamMapping = {
@@ -156,7 +162,10 @@ export const teamRouter = router({
             .where(eq(teamsTable.publicId, input.publicId));
 
             if(teamId[0] === undefined){
-                throw new TRPCError({ code: "NOT_FOUND" });
+                throw new TRPCError({ 
+                    code: "NOT_FOUND",
+                    message: "Team not found."
+                });
             }
             
             const userDeletePerms = await ctx.db.select({
@@ -169,10 +178,12 @@ export const teamRouter = router({
             ));
 
             if(userDeletePerms[0] === undefined || !(userDeletePerms[0].deleteTeamPerm)){
-                throw new TRPCError({ code: "FORBIDDEN" });
+                throw new TRPCError({ 
+                    code: "FORBIDDEN",
+                    message: "You do not have permission to delete this team."
+                });
             }
 
             await ctx.db.delete(teamsTable).where(eq(teamsTable.publicId, input.publicId));
         }),
-
 });
