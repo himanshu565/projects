@@ -6,7 +6,7 @@ import { teamsTable } from "./teams";
 export const teamDocJunctionTable = pgTable(
     "team_doc_junc", 
     {
-        teamId: integer("user_id").notNull().references(() : AnyPgColumn => teamsTable.id, { onDelete: "cascade" }),
+        teamId: integer("team_id").notNull().references(() : AnyPgColumn => teamsTable.id, { onDelete: "cascade" }),
         docId: integer("doc_id").notNull().references(() : AnyPgColumn => docsTable.id, { onDelete: "cascade" }),
     },
     (table) => [

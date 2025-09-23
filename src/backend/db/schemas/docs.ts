@@ -1,4 +1,4 @@
-import { integer, PgColumn, pgTable, uniqueIndex, varchar } from "drizzle-orm/pg-core";
+import { integer, PgColumn, pgTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/pg-core";
 import { usersTable } from "./users";
 
 export const docsTable = pgTable(
@@ -7,8 +7,10 @@ export const docsTable = pgTable(
         id: integer().primaryKey().generatedAlwaysAsIdentity(),
         publicId: varchar("public_id", { length: 10 }).unique().notNull(),
         name: varchar("doc_name", { length: 255 }).notNull(),
-        ownerId: integer().references((): PgColumn => usersTable.id),
-        numRef: integer().notNull(),
+        ownerId: integer("owner_id").references((): PgColumn => usersTable.id, { onDelete: "cascade" }).notNull(),
+        lastEditorId: integer("last_editor_id").references((): PgColumn => usersTable.id, {onDelete: "cascade"}).notNull(),
+        lastEdited: timestamp("last_edited").notNull().defaultNow(),
+        numRef: integer("num_ref").notNull(),
     },
     (table) => [
         uniqueIndex("public_id_idx").on(table.publicId),
