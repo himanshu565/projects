@@ -11,6 +11,8 @@ import { docsTable } from "../db/schemas/docs.js";
 import { teamDocJunctionTable } from "../db/schemas/teamDocJunction.js";
 import { TRPCError } from "@trpc/server";
 import { generateUniquePublicId } from "../util/crypt.js";
+import { randomUUID } from "node:crypto";
+import { invitesTable, type Invite } from "../db/schemas/invite.js";
 
 export const teamRouter = router({
     getTeams: 
@@ -186,4 +188,64 @@ export const teamRouter = router({
 
             await ctx.db.delete(teamsTable).where(eq(teamsTable.publicId, input.publicId));
         }),
+
+    generateInviteLink:
+        publicProcedure.input(z.object({
+            teamId: z.string(),
+        }))
+        .query(async (opts): Promise<string> => {
+            const { input, ctx } = opts;
+
+            const team = await ctx.db.select({
+                id: teamsTable.id,
+            })
+            .from(teamsTable)
+            .where(eq(teamsTable.publicId, input.teamId));
+
+            if(team[0] === undefined){
+                throw new TRPCError({ 
+                    code: "NOT_FOUND",
+                    message: "Team not found."
+                });
+            }
+
+            const userAddUserPerms = await ctx.db.select({
+                addUserPerm: userTeamJunctionTable.addUserPerm,
+            })
+            .from(userTeamJunctionTable)
+            .where(and(
+                eq(userTeamJunctionTable.userId, ctx.user.id),
+                eq(userTeamJunctionTable.teamId, team[0].id),
+            ));
+
+            if(userAddUserPerms[0] === undefined || !(userAddUserPerms[0].addUserPerm)){
+                throw new TRPCError({ 
+                    code: "FORBIDDEN",
+                    message: "You do not have permission to invite users to this team."
+                });
+            }
+
+            const inviteToken: string = randomUUID();
+
+            const newInvite: Invite = {
+                uuid: inviteToken,
+                inviterId: ctx.user.id,
+                teamId: team[0].id,
+            }
+
+            await ctx.db.insert(invitesTable).values(newInvite);
+
+            if(process.env.APP_BASE_URL === undefined){
+                throw new TRPCError({ 
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Failed to generate invite link. Please try again."
+                });
+            }
+
+            const inviteLink = `${process.env.APP_BASE_URL}/invite/${inviteToken}`;
+
+            return inviteLink;
+        }),
+
+    // TODO: Need to add updation & deletion of team (only by authorized users) 
 });
