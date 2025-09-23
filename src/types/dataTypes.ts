@@ -13,6 +13,18 @@ interface JwtState {
     expired: boolean;
     decoded: JwtPayload | string; 
 }
+interface DocCardDetails {
+    docId: string | undefined,
+    name: string | undefined,
+    ownerId: string | undefined,
+    ownerFirstName: string | undefined,
+    ownerLastName: string | undefined,
+    lastEdited: string | undefined,
+    lastEditorId: string | undefined,
+    lastEditorFirstName: string | undefined,
+    lastEditorLastName: string | undefined,
+    size: number | undefined,
+}
 
 interface TeamCardDetails {
     teamId: string | undefined,
@@ -57,5 +69,6 @@ export class FileChunk{
 
 export type { OAuthTokenResponse };
 export type { TeamCardDetails };
+export type { DocCardDetails };
 export type { TeamPageDetails };
 export type { JwtState };
