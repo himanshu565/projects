@@ -9,8 +9,8 @@ export const docsTable = pgTable(
         name: varchar("doc_name", { length: 255 }).notNull(),
         ownerId: integer("owner_id").references((): PgColumn => usersTable.id, { onDelete: "cascade" }).notNull(),
         lastEditorId: integer("last_editor_id").references((): PgColumn => usersTable.id, {onDelete: "cascade"}).notNull(),
-        lastEdited: timestamp("last_edited").notNull().defaultNow(),
-        numRef: integer("num_ref").notNull(),
+        lastEdited: timestamp("last_edited_at").notNull().defaultNow(),
+        createdAt: timestamp("created_at").notNull().defaultNow(),
     },
     (table) => [
         uniqueIndex("public_id_idx").on(table.publicId),

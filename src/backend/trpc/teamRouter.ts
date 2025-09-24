@@ -36,7 +36,7 @@ export const teamRouter = router({
             return out;
         }),
 
-    getTeam: 
+    getTeamDetails: 
         publicProcedure.input(z.object({ teamid: z.string() }))
         .query(async (opts): Promise<TeamPageDetails> => {
             const { ctx, input } = opts;
@@ -145,6 +145,7 @@ export const teamRouter = router({
                 removeDocPerm: true,
                 removeUserPerm: true,
                 deleteTeamPerm: true,
+                updateTeamPerm: true,
             }
 
             await ctx.db.insert(userTeamJunctionTable).values(newUserTeamMapping);

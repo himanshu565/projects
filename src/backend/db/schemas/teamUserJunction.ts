@@ -8,11 +8,12 @@ export const userTeamJunctionTable = pgTable(
     {
         userId: integer("user_id").notNull().references(() : AnyPgColumn => usersTable.id, { onDelete: "cascade" }),
         teamId: integer("team_id").notNull().references(() : AnyPgColumn => teamsTable.id, { onDelete: "cascade" }),
-        addUserPerm: boolean("add_user_perm").notNull(),
-        removeUserPerm: boolean("remove_user_perm").notNull(),
-        addDocPerm: boolean("add_doc_perm").notNull(),
-        removeDocPerm: boolean("remove_doc_perm").notNull(),
-        deleteTeamPerm: boolean("delete_team_perm").notNull().default(true),
+        addUserPerm: boolean("add_user_perm").notNull().default(false),
+        removeUserPerm: boolean("remove_user_perm").notNull().default(false),
+        addDocPerm: boolean("add_doc_perm").notNull().default(false),
+        removeDocPerm: boolean("remove_doc_perm").notNull().default(false),
+        deleteTeamPerm: boolean("delete_team_perm").notNull().default(false),
+        updateTeamPerm: boolean("update_team_perm").notNull().default(false),
     },
     (table) => [
         primaryKey({ columns: [table.teamId, table.userId] }),
