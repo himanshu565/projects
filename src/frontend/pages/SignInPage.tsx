@@ -1,3 +1,5 @@
+import React from "react";
+import SignINPage from "../components/signIn.js";
 export function SignInPage() {
 
     const googleSignIn = async () => {
@@ -14,7 +16,7 @@ export function SignInPage() {
 
     return (
         <div>
-            <button onClick={googleSignIn}>Continue with Google</button>
+             <SignINPage />;
         </div>
     );
 }
