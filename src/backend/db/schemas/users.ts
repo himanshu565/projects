@@ -7,7 +7,7 @@ export const usersTable = pgTable(
         id: integer().primaryKey().generatedAlwaysAsIdentity(),
         publicId: varchar("public_id",{ length: 10 }).unique().notNull(),
         firstName: varchar("first_name", { length: 255 }).notNull(),
-        lastName: varchar("last_name", { length: 255 }).notNull(),
+        lastName: varchar("last_name", { length: 255 }).notNull().default(""),
         email: varchar({ length: 255 }).notNull().unique(),
     },
     (table) => [
