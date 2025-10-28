@@ -13,29 +13,9 @@ import { TRPCError } from "@trpc/server";
 import { generateUniquePublicId } from "../util/crypt.js";
 import { randomUUID } from "node:crypto";
 import { invitesTable, type Invite } from "../db/schemas/invite.js";
+import { generateInviteLink } from "../util/invite-utils.js";
 
 export const teamRouter = router({
-    getTeams: 
-        publicProcedure
-        .query(async (opts): Promise<TeamCardDetails[]> => {
-            const { ctx } = opts;
-
-            const out: TeamCardDetails[] = await ctx.db.select({ 
-                teamId: teamsTable.publicId,
-                name: teamsTable.teamName,
-                desc: teamsTable.teamDesc,
-                ownerId: usersTable.publicId,
-                ownerFirstName: usersTable.firstName,
-                ownerLastName: usersTable.lastName,
-            })
-            .from(userTeamJunctionTable)
-            .innerJoin(teamsTable, eq(userTeamJunctionTable.teamId, teamsTable.id))
-            .innerJoin(usersTable, eq(teamsTable.ownerId, usersTable.id))
-            .where(eq(userTeamJunctionTable.userId, ctx.user.id));
-
-            return out;
-        }),
-
     getTeamDetails: 
         publicProcedure.input(z.object({ teamid: z.string() }))
         .query(async (opts): Promise<TeamPageDetails> => {
@@ -200,11 +180,11 @@ export const teamRouter = router({
             const team = await ctx.db.select({
                 id: teamsTable.id,
             })
-            .from(teamsTable)
-            .where(eq(teamsTable.publicId, input.teamId));
+                .from(teamsTable)
+                .where(eq(teamsTable.publicId, input.teamId));
 
-            if(team[0] === undefined){
-                throw new TRPCError({ 
+            if (team[0] === undefined) {
+                throw new TRPCError({
                     code: "NOT_FOUND",
                     message: "Team not found."
                 });
@@ -226,27 +206,9 @@ export const teamRouter = router({
                 });
             }
 
-            const inviteToken: string = randomUUID();
-
-            const newInvite: Invite = {
-                uuid: inviteToken,
-                inviterId: ctx.user.id,
-                teamId: team[0].id,
-            }
-
-            await ctx.db.insert(invitesTable).values(newInvite);
-
-            if(process.env.APP_BASE_URL === undefined){
-                throw new TRPCError({ 
-                    code: "INTERNAL_SERVER_ERROR",
-                    message: "Failed to generate invite link. Please try again."
-                });
-            }
-
-            const inviteLink = `${process.env.APP_BASE_URL}/invite/${inviteToken}`;
+            const inviteLink: string = await generateInviteLink(team[0].id, ctx.user.id);
 
             return inviteLink;
         }),
 
-    // TODO: Need to add updation & deletion of team (only by authorized users) 
 });

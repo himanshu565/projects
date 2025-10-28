@@ -1,5 +1,10 @@
 import type { JwtPayload } from 'jsonwebtoken';
 
+interface InviteResponse {
+    success: boolean;
+    invites: number;
+}
+
 interface OAuthTokenResponse {
   access_token: string;
   id_token?: string;
@@ -67,6 +72,7 @@ export class FileChunk{
     }
 }
 
+export type { InviteResponse };
 export type { OAuthTokenResponse };
 export type { TeamCardDetails };
 export type { DocCardDetails };
