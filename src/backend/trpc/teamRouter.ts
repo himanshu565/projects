@@ -14,6 +14,7 @@ import { generateUniquePublicId } from "../util/crypt.js";
 import { randomUUID } from "node:crypto";
 import { invitesTable, type Invite } from "../db/schemas/invite.js";
 import { generateInviteLink } from "../util/invite-utils.js";
+import { hasTeamPermissions } from "../util/rbac.js";
 
 export const teamRouter = router({
     getTeamDetails: 
@@ -120,12 +121,7 @@ export const teamRouter = router({
             const newUserTeamMapping: UserTeamMapping = {
                 userId: ctx.user.id,
                 teamId: newTeamId[0].id,
-                addUserPerm: true,
-                addDocPerm: true,
-                removeDocPerm: true,
-                removeUserPerm: true,
-                deleteTeamPerm: true,
-                updateTeamPerm: true,
+                role: "owner",
             }
 
             await ctx.db.insert(userTeamJunctionTable).values(newUserTeamMapping);
@@ -151,8 +147,8 @@ export const teamRouter = router({
                 });
             }
             
-            const userDeletePerms = await ctx.db.select({
-                deleteTeamPerm: userTeamJunctionTable.deleteTeamPerm,  
+            const userRole = await ctx.db.select({
+                role: userTeamJunctionTable.role,  
             })
             .from(userTeamJunctionTable)
             .where(and(
@@ -160,7 +156,7 @@ export const teamRouter = router({
                 eq(userTeamJunctionTable.teamId, teamId[0].id),
             ));
 
-            if(userDeletePerms[0] === undefined || !(userDeletePerms[0].deleteTeamPerm)){
+            if(userRole[0] === undefined || hasTeamPermissions(userRole[0].role, "owner")){
                 throw new TRPCError({ 
                     code: "FORBIDDEN",
                     message: "You do not have permission to delete this team."
@@ -190,8 +186,8 @@ export const teamRouter = router({
                 });
             }
 
-            const userAddUserPerms = await ctx.db.select({
-                addUserPerm: userTeamJunctionTable.addUserPerm,
+            const userRole = await ctx.db.select({
+                role: userTeamJunctionTable.role,
             })
             .from(userTeamJunctionTable)
             .where(and(
@@ -199,7 +195,7 @@ export const teamRouter = router({
                 eq(userTeamJunctionTable.teamId, team[0].id),
             ));
 
-            if(userAddUserPerms[0] === undefined || !(userAddUserPerms[0].addUserPerm)){
+            if(userRole[0] === undefined || hasTeamPermissions(userRole[0].role, "admin")){
                 throw new TRPCError({ 
                     code: "FORBIDDEN",
                     message: "You do not have permission to invite users to this team."

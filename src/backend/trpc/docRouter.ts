@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import type { DocCardDetails } from "../../types/dataTypes.js";
 import { docsTable } from "../db/schemas/docs.js";
 import { teamDocJunctionTable } from "../db/schemas/teamDocJunction.js";
@@ -8,6 +8,7 @@ import { publicProcedure, router } from "./trpc.js";
 import { z } from 'zod';
 import { TRPCError } from "@trpc/server";
 import fs from 'node:fs';
+import { userTeamJunctionTable } from "../db/schemas/teamUserJunction.js";
 
 export const docRouter = router({
     getTeamDocs: 
@@ -18,6 +19,34 @@ export const docRouter = router({
         )
         .query(async (opts): Promise<DocCardDetails[]> => {
             const { input, ctx } = opts;
+
+            // Check if user has access to the team
+            const team = await ctx.db.select({
+                id: teamsTable.id,
+            })
+                .from(teamsTable)
+                .where(eq(teamsTable.publicId, input.teamId));
+
+            if (team.length === 0 || team[0] === undefined) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Team not found."
+                });
+            }
+
+            const userAccess = await ctx.db.select()
+                .from(userTeamJunctionTable)
+                .where(and(
+                    eq(userTeamJunctionTable.userId, ctx.user.id),
+                    eq(userTeamJunctionTable.teamId, team[0].id)
+                ));
+
+            if (userAccess.length === 0) {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You do not have access to this team."
+                });
+            }
 
             // Fetch documents associated with the team
             const docDetails = await ctx.db.select({ 

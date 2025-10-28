@@ -8,6 +8,7 @@ import { publicProcedure, router } from "./trpc.js";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { generateInviteLink } from "../util/invite-utils.js";
+import { hasTeamPermissions } from "../util/rbac.js";
 
 export const userTeamRouter = router({
     getUserTeams:
@@ -53,14 +54,16 @@ export const userTeamRouter = router({
             }
 
             // Check if the user has permission to remove users from the team
-            const initiatorPerms = await ctx.db.select()
+            const initiatorRole = await ctx.db.select({
+                role: userTeamJunctionTable.role,
+            })
                 .from(userTeamJunctionTable)
                 .where(and(
                     eq(userTeamJunctionTable.teamId, team[0].id),
                     eq(userTeamJunctionTable.userId, ctx.user.id)
                 ));
 
-            if (initiatorPerms.length === 0 || initiatorPerms[0] === undefined || !initiatorPerms[0].removeUserPerm) {
+            if (initiatorRole[0] === undefined || hasTeamPermissions(initiatorRole[0].role, "admin")) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'You do not have permission to remove users from this team'
@@ -111,14 +114,16 @@ export const userTeamRouter = router({
             }
 
             // Check if the user has permission to invite others
-            const initiatorPerms = await ctx.db.select()
+            const initiatorRole = await ctx.db.select({
+                role: userTeamJunctionTable.role,
+            })
                 .from(userTeamJunctionTable)
                 .where(and(
                     eq(userTeamJunctionTable.teamId, team[0].id),
                     eq(userTeamJunctionTable.userId, ctx.user.id)
                 ));
 
-            if (initiatorPerms.length === 0 || initiatorPerms[0] === undefined || !initiatorPerms[0].addUserPerm) {
+            if (initiatorRole[0] === undefined || hasTeamPermissions(initiatorRole[0].role, "admin")) {
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'You do not have permission to invite users to this team'
