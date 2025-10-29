@@ -1,8 +1,10 @@
 import type { Socket } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents } from "../../types/eventType.js";
-import { logger } from "../index.js";
-import { open, stat } from "node:fs/promises";
-import { FileChunk } from "../../types/dataTypes.js";
+import { db, logger } from "../index.js";
+import { getFileReadStream, getFileSize } from "../fs/data-retrieval.js";
+import { docsTable } from "../db/schemas/docs.js";
+import { and, eq } from "drizzle-orm";
+import { userDocJunctionTable } from "../db/schemas/userDocJunction.js";
 
 // documents directory
 const docDir: string = process.env.PROJ_DIR || "/var/proj/doc/";
@@ -15,38 +17,49 @@ export const clientEventHandlers = (socket: Socket<ClientToServerEvents, ServerT
         socket.broadcast.in("file-details").emit("userWriting",socket.data.user, caretPos);
     };
 
-    const getFileDataHandler = async (fileId: string) => {
+    const getFileDataHandler = async (publicId: string) => {
 
-        const fileName = "xfile"; //TODO: should get file name & auth details from DB using fileId
+        const docDetails = await db.select({
+            docId: docsTable.id,
+            docName: docsTable.name,
+        })
+        .from(docsTable)
+        .where(eq(docsTable.publicId, publicId));
 
-        console.log("user has requested a file");
-
-        if(true /*TODO: Should check if user has correct authorizations to access this file*/){
-
-            const fileHandle = await open(docDir + fileName, 'r');
-            const fileStream = fileHandle.createReadStream();
-            const fileStat = await stat(docDir + fileName); 
-            fileStream.on("data", (chunk) => {
-                // TODO: should first send events to redis for emit replay upon connection failure
-                socket.emit("fileData", chunk.toString());
-            });
-
-            console.log(fileStat.size);
-
-            let fileChunks: FileChunk[] = [];
-            for(let i = 0; i < Math.ceil(fileStat.size/30); ++i){
-                
-                let chunk: FileChunk = new FileChunk(1, i*30, 30); 
-                
-                if(Math.ceil(fileStat.size/30) - 1 === i){
-                    chunk.chunkSize = fileStat.size%30;
-                }
-
-                fileChunks[i] = chunk;
-            }
-
-            socket.emit("chunkDetails", fileChunks);
+        if(docDetails.length === 0 || !docDetails[0]){
+            //TODO: Add error handling for no document found
+            logger.error(`No document found with public ID: ${publicId}`);
+            return;
         }
+
+        const userDocRole = await db.select({
+            userRole: userDocJunctionTable.role,
+        })
+        .from(userDocJunctionTable)
+        .where(
+            and(
+                eq(userDocJunctionTable.docId, docDetails[0].docId),
+                eq(userDocJunctionTable.userId, socket.data.user.id),
+                eq(userDocJunctionTable.teamId, socket.data.user.teamId)
+            )
+        );
+
+        if(userDocRole.length === 0 || !userDocRole[0]){
+            //TODO: Add error handling for no user-document mapping found
+            logger.error(`No user-document mapping found for user ID: ${socket.data.user.id} and document ID: ${docDetails[0].docId}`);
+            return;
+        }
+
+        const filePath = docDir + docDetails[0].docName + ".txt";
+        const fileReadStream = await getFileReadStream(filePath);
+        
+        fileReadStream.on("data", (chunk: Buffer) => {
+            socket.emit("fileData", chunk.toString());
+        });
+
+        const fileSize = await getFileSize(filePath);
+        
+        console.log(`File size is ${fileSize} bytes`);
     } 
 
     socket.on("write", writeHandler);
