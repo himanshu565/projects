@@ -1,18 +1,32 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, type RefObject } from "react";
 import debounce from "./autosave.js";
+import type { ClientToServerEvents, ServerToClientEvents } from "../../../types/eventType.js";
+import { io, Socket } from "socket.io-client";
+import { setupEventHandlers } from "../../socket/server-event-handlers.js";
 
 type Props = {
-  initial?: string;
   onSave?: (content: string) => Promise<void> | void;
 };
 
-export const EditorArea: React.FC<Props> = ({ initial = "", onSave }) => {
-  const [content, setContent] = useState(initial);
+export const EditorArea: React.FC<Props> = ({ onSave }) => {
   const editableRef = useRef<HTMLDivElement | null>(null);
+  const socket: RefObject<Socket<ServerToClientEvents, ClientToServerEvents> | null> = useRef<Socket | null>(null);
 
   useEffect(() => {
-    setContent(initial);
-  }, [initial]);
+      socket.current = io("http://localhost:3000");
+      setupEventHandlers(socket.current);
+      const fileDataHandler = (chunk: string | Buffer) => {
+        if(editableRef.current){
+            editableRef.current.innerText = chunk.toString();
+        }
+      };
+
+      socket.current.on("fileData", fileDataHandler);
+      socket.current.emit("getFileData", "file-id-123");
+      return () => {
+          socket.current?.disconnect();
+      }
+  }, [])
 
   const debouncedSave = useRef(
     debounce((c: string) => {
@@ -22,7 +36,6 @@ export const EditorArea: React.FC<Props> = ({ initial = "", onSave }) => {
 
   const onInput = () => {
     const text = editableRef.current?.innerText || "";
-    setContent(text);
     debouncedSave.current(text);
   };
 
@@ -37,7 +50,6 @@ export const EditorArea: React.FC<Props> = ({ initial = "", onSave }) => {
         className="min-h-[300px] border p-4 rounded focus:outline-none"
         suppressContentEditableWarning
       >
-        {initial}
       </div>
     </div>
   );

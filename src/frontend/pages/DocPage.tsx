@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import Sidebar from "./Sidebar.js";
-import Toolbar from "./Toolbar.js";
-import EditorArea from "./EditorArea.js";
-import type { DocCardDetails, TeamCardDetails } from "../../../types/dataTypes.js";
+import type { DocCardDetails, TeamCardDetails } from "../../types/dataTypes.js";
+import Sidebar from "../components/editor/Sidebar.js";
+import Toolbar from "../components/editor/Toolbar.js";
+import EditorArea from "../components/editor/EditorArea.js";
 
 type Props = {
   docId?: string;
@@ -10,7 +10,7 @@ type Props = {
   docDetails?: DocCardDetails[];
 };
 
-export const EditorLayout: React.FC<Props> = ({
+export const DocPage: React.FC<Props> = ({
   docId,
   teamDetails,
   docDetails,
@@ -41,7 +41,6 @@ export const EditorLayout: React.FC<Props> = ({
         <Toolbar title={`Document ${docId ?? ""}`} onSave={handleSave} />
         <main className="p-4 flex-1 overflow-auto">
           <EditorArea
-            initial={""}
             onSave={async (content) => {
               await handleSave();
               console.log("autosaved", content);
@@ -53,4 +52,4 @@ export const EditorLayout: React.FC<Props> = ({
   );
 };
 
-export default EditorLayout;
+export default DocPage;
