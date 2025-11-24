@@ -1,58 +1,86 @@
-import React, { useEffect, useRef, type RefObject } from "react";
-import debounce from "./autosave.js";
-import type { ClientToServerEvents, ServerToClientEvents } from "../../../types/eventType.js";
-import { io, Socket } from "socket.io-client";
-import { setupEventHandlers } from "../../socket/server-event-handlers.js";
+import React, { useState, useEffect } from 'react'
+import { EditorState } from 'prosemirror-state'
+import { ProseMirror, ProseMirrorDoc, reactKeys } from '@handlewithcare/react-prosemirror'
+import { exampleSetup } from 'prosemirror-example-setup'
+import { schema } from 'prosemirror-schema-basic'
+import { keymap } from 'prosemirror-keymap'
+import { baseKeymap } from 'prosemirror-commands'
+
+import * as Y from 'yjs'
+import { SocketIOProvider } from 'y-socket.io'
+import { ySyncPlugin, yCursorPlugin, yUndoPlugin, undo, redo, initProseMirrorDoc } from 'y-prosemirror'
 
 type Props = {
-  onSave?: (content: string) => Promise<void> | void;
+    roomId?: string;
+    onSave?: (content: any) => Promise<void> | void;
 };
 
-export const EditorArea: React.FC<Props> = ({ onSave }) => {
-  const editableRef = useRef<HTMLDivElement | null>(null);
-  const socket: RefObject<Socket<ServerToClientEvents, ClientToServerEvents> | null> = useRef<Socket | null>(null);
+export const EditorArea: React.FC<Props> = ({ roomId, onSave }) => {
+    const [editorState, setEditorState] = useState<EditorState | null>(null);
+    const [provider, setProvider] = useState<SocketIOProvider | null>(null);
 
-  useEffect(() => {
-      socket.current = io("http://localhost:3000");
-      setupEventHandlers(socket.current);
-      const fileDataHandler = (chunk: string | Buffer) => {
-        if(editableRef.current){
-            editableRef.current.innerText = chunk.toString();
-        }
-      };
+    useEffect(() => {
+        const ydoc = new Y.Doc();
+        const newProvider = new SocketIOProvider(
+            'ws://localhost:3000',
+            roomId || 'default-room',
+            ydoc,
+            {
+                autoConnect: true,
+                auth: { token: 'optional-auth-token' }
+            }
+        );
 
-      socket.current.on("fileData", fileDataHandler);
-      socket.current.emit("getFileData", "file-id-123");
-      return () => {
-          socket.current?.disconnect();
-      }
-  }, [])
+        newProvider.on('status', ({ status }: { status: string }) => {
+            console.log(status) // Logs "connected" or "disconnected"
+        });
 
-  const debouncedSave = useRef(
-    debounce((c: string) => {
-      onSave?.(c);
-    }, 800)
-  );
+        const yXmlFragment = ydoc.getXmlFragment('prosemirror')
+        const { doc, mapping } = initProseMirrorDoc(yXmlFragment, schema)
+        const defaultState = EditorState.create({
+            doc,
+            schema,
+            plugins: [
+                ySyncPlugin(yXmlFragment, { mapping }),
+                yCursorPlugin(newProvider.awareness),
+                yUndoPlugin(),
+                keymap({
+                    'Mod-z': undo,
+                    'Mod-y': redo,
+                    'Mod-Shift-z': redo
+                }),
+                keymap(baseKeymap),
+                reactKeys()
+            ].concat(exampleSetup({ schema }))
+        });
 
-  const onInput = () => {
-    const text = editableRef.current?.innerText || "";
-    debouncedSave.current(text);
-  };
+        setProvider(newProvider);
+        setEditorState(defaultState);
 
-  return (
-    <div className="editor-area">
-      <div
-        ref={editableRef}
-        contentEditable
-        role="textbox"
-        aria-label="Document editor"
-        onInput={onInput}
-        className="min-h-[300px] border p-4 rounded focus:outline-none"
-        suppressContentEditableWarning
-      >
-      </div>
-    </div>
-  );
+        window.example = { ydoc, provider: newProvider, yXmlFragment, pmDoc: doc };
+
+        return () => {
+            newProvider.destroy();
+            ydoc.destroy();
+        };
+    }, [roomId]);
+
+    if (!editorState) {
+        return <div>Loading editor...</div>;
+    }
+
+    return (
+        <div className="pm-root mx-auto mt-8 max-w-3xl rounded-md border bg-white shadow-sm">
+            <ProseMirror
+                state={editorState}
+                dispatchTransaction={(tr) => {
+                    setEditorState((s) => s?.apply(tr) || s);
+                }}
+            >
+                <ProseMirrorDoc />
+            </ProseMirror>
+        </div>
+    );
 };
 
 export default EditorArea;

@@ -7,9 +7,7 @@ import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 import { Server } from 'socket.io';
-import type { ClientToServerEvents, ServerToClientEvents } from '../types/eventType.js';
-import { specialEventHandlers } from './socket/special-event-handlers.js';
-import { clientEventHandlers } from './socket/client-event-handlers.js';
+import { YSocketIO } from 'y-socket.io/dist/server';
 import { loginHandler, OAuthCallback } from './auth/oauth-handlers.js';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 
@@ -42,17 +40,18 @@ app.get('/auth/login', loginHandler);
 app.get('/auth/callback', OAuthCallback);
 
 export const httpServer = createServer(app);
-export const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+export const io = new Server(httpServer, {
     cors: {
         origin: "http://localhost:5173"
     }
 });
 
-io.on("connection", (socket) => {
-    clientEventHandlers(socket);
-    specialEventHandlers(socket);
-    logger.info(`Connection established for host ${socket.client.request.headers.origin}`)
+export const ySocketIO = new YSocketIO(io, {
+    authenticate: (handshake) => {
+        return true;
+    },
 });
+ySocketIO.initialize();
 
 httpServer.listen(PORT, () => {
     logger.info(`Running node server on ${PORT}`);

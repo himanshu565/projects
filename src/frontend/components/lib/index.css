@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import "prosemirror-view/style/prosemirror.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 
 @layer base {
   :root {
