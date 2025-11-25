@@ -1,4 +1,3 @@
-import '../frontend/components/lib/index.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage.js';
 import  DashboardPage  from './pages/DashboardPage.js';
@@ -6,7 +5,6 @@ import { TeamPage } from './pages/TeamPage.js';
 import SignINPage from './components/signIn.js';
 import { AuthCallback } from './components/AuthCallback.js';
 import DocPage from './pages/DocPage.js';
-import EditorArea from './components/editor/EditorArea.js';
 
 const App: React.FC = () => {
   return (
@@ -14,7 +12,6 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/callback" element={<AuthCallback />} />
-        <Route path="/doc" element={ <EditorArea roomId="test-doc-room" />} />
         <Route path="/signin" element={<SignINPage />} />
         <Route path="/team/:teamid/doc/:docid" element={<DocPage/>} />
         <Route path="/dashboard" element={<DashboardPage />} />

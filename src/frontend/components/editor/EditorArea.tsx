@@ -17,7 +17,6 @@ type Props = {
 
 export const EditorArea: React.FC<Props> = ({ roomId, onSave }) => {
     const [editorState, setEditorState] = useState<EditorState | null>(null);
-    const [provider, setProvider] = useState<SocketIOProvider | null>(null);
 
     useEffect(() => {
         const ydoc = new Y.Doc();
@@ -54,7 +53,6 @@ export const EditorArea: React.FC<Props> = ({ roomId, onSave }) => {
             ].concat(exampleSetup({ schema }))
         });
 
-        setProvider(newProvider);
         setEditorState(defaultState);
 
         window.example = { ydoc, provider: newProvider, yXmlFragment, pmDoc: doc };
