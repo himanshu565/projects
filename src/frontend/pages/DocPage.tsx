@@ -29,6 +29,8 @@ export const DocPage: React.FC<Props> = ({
     return new Promise<void>((res) => setTimeout(res, 300));
   };
 
+  const [showPreview, setShowPreview] = useState(false);
+
   return (
     <div className="flex h-full bg-gray-50">
       <Sidebar
@@ -38,13 +40,21 @@ export const DocPage: React.FC<Props> = ({
         {...(docDetails && { docDetails })}
       />
       <div className="flex-1 flex flex-col">
-        <Toolbar title={`Document ${docId ?? ""}`} onSave={handleSave} />
+        <Toolbar
+          title={`Document ${docId ?? ""}`}
+          onSave={handleSave}
+          showPreview={showPreview}
+          onTogglePreview={(next) => setShowPreview(next)}
+          onRename={() => console.log("rename requested")}
+          onShare={() => console.log("share requested")}
+        />
         <main className="p-4 flex-1 overflow-auto">
           <EditorArea
             onSave={async (content) => {
               await handleSave();
               console.log("autosaved", content);
             }}
+            showPreview={showPreview}
           />
         </main>
       </div>

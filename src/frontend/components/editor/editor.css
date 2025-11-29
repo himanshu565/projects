@@ -1,0 +1,25 @@
+.yjs-cursor {
+  transition: transform 180ms linear, opacity 180ms linear;
+}
+.yjs-cursor > .yjs-cursor-caret {
+  width: 2px;
+  background: currentColor;
+  animation: blink 1.2s steps(2, start) infinite;
+}
+.yjs-cursor > .yjs-cursor-username {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  margin-left: 6px;
+  background: rgba(0,0,0,0.06);
+}
+@keyframes blink {
+  from { opacity: 1 }
+  50% { opacity: 0 }
+  to { opacity: 1 }
+}
+
+/* make cursor color come from awareness user color if available */
+.yjs-cursor[data-color] {
+  color: inherit;
+}
