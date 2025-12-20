@@ -179,4 +179,4 @@ export const EditorArea: React.FC<Props> = ({
 
 export default EditorArea;
 
-// tanmay try it once
+// try it once
