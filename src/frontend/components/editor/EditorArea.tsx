@@ -85,7 +85,7 @@ export const EditorArea: React.FC<Props> = ({
         "#EF4444",
         "#F97316",
         "#F59E0B",
-        
+
         "#10B981",
         "#06B6D4",
         "#3B82F6",
@@ -180,3 +180,4 @@ export const EditorArea: React.FC<Props> = ({
 export default EditorArea;
 
 // try it once
+// tryitonce again tanmay
