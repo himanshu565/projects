@@ -181,7 +181,4 @@ export default EditorArea;
 
 // try it once
 // tryitonce again tanmay
-/// try it more boys 
-// himanshu is here
-// ii got the jobb
-//all the besttt
+// tamaay bby finish krdo isko if time me job  me thoda busy hu 
